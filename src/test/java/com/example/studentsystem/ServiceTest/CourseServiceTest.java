@@ -10,11 +10,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class CourseServiceTest {
@@ -63,23 +63,57 @@ public class CourseServiceTest {
     }
 
     @Test
-    void testDeleteCourse() {
-        // Arrange: Set up initial data
-        Course course = new Course(1L, "Java", "Description", Arrays.asList("Step1"));
-        Student student1 = new Student(1L, "John", "Student", Arrays.asList(course));
-        Student student2 = new Student(2L, "Jane", "Student", Arrays.asList(course));
-        List<Student> students = List.of(student1, student2);
+    public void testDeleteCourse_WhenIdIsNull() {
+        boolean result = courseService.deleteCourse(null);
+
+        assertFalse(result);
+        verify(courseRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    public void testDeleteCourse_WhenIdIsNotNull_AndCourseExists() {
+        Long courseId = 1L;
+        Course course = new Course();
+        course.setId(courseId);
+
+        Student student1 = new Student();
+        student1.setId(1L);
+        List<Course> courses1 = new ArrayList<>();
+        courses1.add(course);
+        student1.setCourses(courses1);
+
+        Student student2 = new Student();
+        student2.setId(2L);
+        List<Course> courses2 = new ArrayList<>();
+        courses2.add(course);
+        student2.setCourses(courses2);
+
+        List<Student> students = new ArrayList<>();
+        students.add(student1);
+        students.add(student2);
 
         when(studentRepository.findAll()).thenReturn(students);
-        doNothing().when(courseRepository).deleteById(1L);
 
-        // Act: Call the deleteCourse method
-        boolean result = courseService.deleteCourse(1L);
+        boolean result = courseService.deleteCourse(courseId);
 
-        // Assert: Verify the course was removed from students and deleted
         assertTrue(result);
-        verify(studentRepository, times(2)).save(any(Student.class)); // Each student should be saved after removing the course
-        verify(courseRepository, times(1)).deleteById(1L); // Course should be deleted from the course repository
+        assertTrue(student1.getCourses().isEmpty());
+        assertTrue(student2.getCourses().isEmpty());
+        verify(studentRepository, times(2)).save(any(Student.class));
+        verify(courseRepository, times(1)).deleteById(courseId);
+    }
+
+    @Test
+    public void testDeleteCourse_WhenExceptionOccurs() {
+        Long courseId = 1L;
+
+        doThrow(new RuntimeException("Database error")).when(courseRepository).deleteById(courseId);
+
+        boolean result = courseService.deleteCourse(courseId);
+
+        assertFalse(result);
+        verify(studentRepository, times(1)).findAll();
+        verify(courseRepository, times(1)).deleteById(courseId);
     }
 
     @Test

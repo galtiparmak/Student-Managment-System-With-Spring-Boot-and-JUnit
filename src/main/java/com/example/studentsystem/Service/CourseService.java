@@ -28,6 +28,9 @@ public class CourseService {
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
+        if (isCourseExist(name)) {
+            return false;
+        }
         try {
             Course course = new Course();
             course.setName(name);
@@ -111,4 +114,19 @@ public class CourseService {
             return false;
         }
     }
+
+    public boolean isCourseExist(String name) {
+        try {
+            List<Course> courses = courseRepository.findAll();
+            if (courses != null && !courses.isEmpty()) {
+                return courses.stream().anyMatch(course -> course.getName().equals(name));
+            }
+
+            return false;
+        } catch (Exception e) {
+            System.err.println("Exception at checking course existence: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

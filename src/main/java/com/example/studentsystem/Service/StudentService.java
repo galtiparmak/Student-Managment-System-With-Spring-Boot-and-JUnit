@@ -110,6 +110,10 @@ public class StudentService {
                 return false;
             }
 
+            if (isCourseEnrolled(studentId, courseId)) {
+                return false;
+            }
+
             Course course = optionalCourse.get();
             student.getCourses().add(course);
             studentRepository.save(student);
@@ -146,6 +150,31 @@ public class StudentService {
             return false;
         } catch (Exception e) {
             System.err.println("Exception at removing course: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean isCourseEnrolled(Long studentId, Long courseId) {
+        if (studentId == null || courseId == null) {
+            return false;
+        }
+
+        try {
+            Optional<Student> optionalStudent = studentRepository.findById(studentId);
+            if (optionalStudent.isEmpty()) {
+                return false;
+            }
+
+            Student student = optionalStudent.get();
+
+            List<Course> courses = student.getCourses();
+            if (courses != null && !courses.isEmpty()) {
+                return courses.stream().anyMatch(course -> course.getId().equals(courseId));
+            }
+
+            return false;
+        } catch (Exception e) {
+            System.err.println("Exception at checking course enrollment: " + e.getMessage());
             return false;
         }
     }

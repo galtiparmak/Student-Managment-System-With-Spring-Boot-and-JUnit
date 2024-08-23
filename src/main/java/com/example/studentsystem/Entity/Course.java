@@ -61,6 +61,7 @@ public class Course {
         this.steps = steps;
     }
 
+
     public String toString() {
         return "Course{" +
                 "id=" + id +

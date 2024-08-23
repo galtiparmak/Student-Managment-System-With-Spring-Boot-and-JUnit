@@ -28,7 +28,11 @@ public class StudentController {
 
     @GetMapping(path = "/get/{StudentId}") // http://localhost:8080/api/student/get/1
     public ResponseEntity<Student> getStudent(@PathVariable Long StudentId) {
-        return ResponseEntity.ok(studentService.getStudent(StudentId));
+        Student student = studentService.getStudent(StudentId);
+        if (student != null) {
+            return ResponseEntity.ok(student);
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping(path = "/get/all") // http://localhost:8080/api/student/get/all

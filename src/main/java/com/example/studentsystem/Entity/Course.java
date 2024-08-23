@@ -6,8 +6,9 @@ import java.util.List;
 @Entity
 @Table(name= "courses")
 public class Course {
-    @Column(name = "id", nullable = false, unique = true)
     @Id
+    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name", nullable = false)
     private String name;
@@ -21,10 +22,10 @@ public class Course {
     }
 
     public Course (Long id, String name, String description, List<String> steps) {
-        this.setId(id);
-        this.setName(name);
-        this.setDescription(description);
-        this.setSteps(steps);
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.steps = steps;
     }
 
 

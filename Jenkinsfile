@@ -23,7 +23,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
                         sh 'docker login -u gekoline -p ${dockerhubpwd}'
                     }
-                   sh 'docker push gekoline/student-system'
+                   sh 'docker push gekoline/student-systems'
                 }
             }
         }

@@ -13,7 +13,7 @@ pipeline {
         stage('Build Docker Image'){
             steps{
                 script{
-                    sh 'docker build -t gekoline/student-systems .'
+                    sh 'docker build -t gekoline/student-system .'
                 }
             }
         }
@@ -23,7 +23,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
                         sh 'docker login -u gekoline -p ${dockerhubpwd}'
                     }
-                   sh 'docker push gekoline/student-systems'
+                   sh 'docker push gekoline/student-system'
                 }
             }
         }

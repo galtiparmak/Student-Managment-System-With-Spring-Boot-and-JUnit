@@ -12,18 +12,19 @@ import java.util.Optional;
 
 @Service
 public class CourseService {
-    // Attributes
+    private final String COURSE_TOPIC = "course_topic";
+
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
+    private final KafkaProducer kafkaProducer;
 
-    // Constructor
     @Autowired
-    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository) {
+    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository, KafkaProducer kafkaProducer) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
-    // Methods
     public boolean createCourse (String name) {
         if (name == null || name.trim().isEmpty()) {
             return false;
@@ -37,6 +38,9 @@ public class CourseService {
             course.setDescription("Course description");
             course.setSteps(new ArrayList<>());
             courseRepository.save(course);
+
+            kafkaProducer.sendMessage(COURSE_TOPIC, "Course created: " + name);
+
             return true;
 
         } catch (Exception e) {
@@ -46,11 +50,23 @@ public class CourseService {
     }
 
     public Course getCourse(Long id) {
-        return courseRepository.findById(id).orElse(null);
+        Optional<Course> optionalCourse = courseRepository.findById(id);
+        if (optionalCourse.isEmpty()) {
+            return null;
+        }
+
+        Course course = optionalCourse.get();
+        kafkaProducer.sendMessage(COURSE_TOPIC, "Course retrieved: " + course.getName());
+
+        return course;
     }
 
     public List<Course> getCourses() {
-        return courseRepository.findAll();
+        List<Course> courses = courseRepository.findAll();
+        courses.forEach(course -> {
+            kafkaProducer.sendMessage(COURSE_TOPIC, "Course retrieved: " + course.getName());
+        });
+        return courses;
     }
 
     public boolean deleteCourse(Long id) {

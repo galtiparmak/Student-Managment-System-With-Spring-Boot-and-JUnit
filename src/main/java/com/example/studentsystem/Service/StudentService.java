@@ -13,19 +13,19 @@ import java.util.Optional;
 
 @Service
 public class StudentService {
+    private final String STUDENT_TOPIC = "student_topic";
 
-    // Attributes
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
+    private final KafkaProducer kafkaProducer;
 
-    // Constructor
     @Autowired
-    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository) {
+    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository, KafkaProducer kafkaProducer) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
-    // Methods
     public boolean createStudent(String name) {
         if (name == null || name.trim().isEmpty()) {
             return false;
@@ -36,6 +36,8 @@ public class StudentService {
             student.setDescription("Student");
             student.setCourses(new ArrayList<>());
             studentRepository.save(student);
+            kafkaProducer.sendMessage(STUDENT_TOPIC, "Student created: " + student.getName());
+
             return true;
 
         } catch (Exception e) {
@@ -45,11 +47,24 @@ public class StudentService {
     }
 
     public Student getStudent(Long id) {
-        return studentRepository.findById(id).orElse(null);
+        Optional<Student> optionalStudent = studentRepository.findById(id);
+        if (optionalStudent.isEmpty()) {
+            return null;
+        }
+
+        Student student = optionalStudent.get();
+        kafkaProducer.sendMessage(STUDENT_TOPIC, "Student retrieved: " + student.getName());
+
+        return student;
     }
 
 
     public List<Student> getStudents() {
+        List<Student> students = studentRepository.findAll();
+        students.forEach(student-> {
+            kafkaProducer.sendMessage(STUDENT_TOPIC, "Student retrieved: " + student.getName());
+        });
+
         return studentRepository.findAll();
     }
 
@@ -66,6 +81,9 @@ public class StudentService {
             Student student = optionalStudent.get();
             student.setDescription(description);
             studentRepository.save(student);
+
+            kafkaProducer.sendMessage(STUDENT_TOPIC, "Student updated: " + student.getName());
+
             return true;
 
         } catch (Exception e) {
@@ -86,6 +104,9 @@ public class StudentService {
 
             Student student = optionalStudent.get();
             studentRepository.delete(student);
+
+            kafkaProducer.sendMessage(STUDENT_TOPIC, "Student deleted: " + student.getName());
+
             return true;
 
         } catch (Exception e) {
@@ -117,6 +138,9 @@ public class StudentService {
             Course course = optionalCourse.get();
             student.getCourses().add(course);
             studentRepository.save(student);
+
+            kafkaProducer.sendMessage(STUDENT_TOPIC, "Course " + course.getName() + " added to student: " + student.getName());
+
             return true;
 
         } catch (Exception e) {
@@ -142,7 +166,8 @@ public class StudentService {
             if (courses != null && !courses.isEmpty()) {
                 boolean removed = courses.removeIf(course -> course.getId().equals(courseId));
                 if (removed) {
-                    studentRepository.save(student); // Save the updated student
+                    studentRepository.save(student);
+                    kafkaProducer.sendMessage(STUDENT_TOPIC, "Course removed from student: " + student.getName());
                     return true;
                 }
             }

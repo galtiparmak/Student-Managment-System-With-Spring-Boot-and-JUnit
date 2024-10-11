@@ -53,6 +53,13 @@ public class StudentControllerTest {
     }
 
     @Test
+    void testGetStudentBadRequest() throws Exception {
+        when(studentService.getStudent(1L)).thenReturn(null);
+        mockMvc.perform(get("/api/student/get/1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testGetAllStudents() throws Exception {
         Student student1 = new Student(1L, "John", "Student", Arrays.asList(new Course(1L, "Java", "Description", Arrays.asList("Step1"))));
         Student student2 = new Student(2L, "Jane", "Student", Arrays.asList(new Course(1L, "Java", "Description", Arrays.asList("Step2"))));

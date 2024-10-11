@@ -133,12 +133,8 @@ public class CourseService {
 
     public boolean isCourseExist(String name) {
         try {
-            List<Course> courses = courseRepository.findAll();
-            if (courses != null && !courses.isEmpty()) {
-                return courses.stream().anyMatch(course -> course.getName().equals(name));
-            }
-
-            return false;
+            Course course = courseRepository.findByName(name);
+            return course != null;
         } catch (Exception e) {
             System.err.println("Exception at checking course existence: " + e.getMessage());
             return false;

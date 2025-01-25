@@ -27,7 +27,6 @@ public class StudentControllerTest {
     @MockBean
     private StudentService studentService;
 
-    // Write your tests here
     @Test
     void testCreateStudent() throws Exception {
         when(studentService.createStudent("John")).thenReturn(true);

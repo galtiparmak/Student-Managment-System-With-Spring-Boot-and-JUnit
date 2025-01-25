@@ -1,5 +1,6 @@
 package com.example.studentsystem.Controller;
 
+import com.example.studentsystem.Entity.Course;
 import com.example.studentsystem.Entity.Student;
 import com.example.studentsystem.Service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,12 @@ public class StudentController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping(path = "/get/courses/{studentId}") // http://localhost:8080/api/student/get/courses/1
+    public ResponseEntity<List<Course>> getCourses(@PathVariable Long studentId) {
+        List<Course> courses = studentService.getCourses(studentId);
+        return ResponseEntity.ok(courses);
     }
 
     @PutMapping(path = "/addCourse/{studentId}/{courseId}") // http://localhost:8080/api/student/addCourse/1/1

@@ -12,17 +12,13 @@ import java.util.Optional;
 
 @Service
 public class CourseService {
-    private final String COURSE_TOPIC = "course_topic";
-
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
-    private final KafkaProducer kafkaProducer;
 
     @Autowired
-    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository, KafkaProducer kafkaProducer) {
+    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
-        this.kafkaProducer = kafkaProducer;
     }
 
     public boolean createCourse (String name) {
@@ -39,7 +35,6 @@ public class CourseService {
             course.setSteps(new ArrayList<>());
             courseRepository.save(course);
 
-            kafkaProducer.sendMessage(COURSE_TOPIC, "Course created: " + name);
 
             return true;
 
@@ -56,16 +51,12 @@ public class CourseService {
         }
 
         Course course = optionalCourse.get();
-        kafkaProducer.sendMessage(COURSE_TOPIC, "Course retrieved: " + course.getName());
 
         return course;
     }
 
     public List<Course> getCourses() {
         List<Course> courses = courseRepository.findAll();
-        courses.forEach(course -> {
-            kafkaProducer.sendMessage(COURSE_TOPIC, "Course retrieved: " + course.getName());
-        });
         return courses;
     }
 

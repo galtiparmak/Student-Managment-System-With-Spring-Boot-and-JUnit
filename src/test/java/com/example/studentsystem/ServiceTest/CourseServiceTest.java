@@ -35,11 +35,11 @@ public class CourseServiceTest {
 
     @Test
     void testCreateCourse() {
-        when(courseRepository.save(new Course(null, "Course1", "Description1", Arrays.asList("Step1")))).thenReturn(new Course(1L, "Course1", "Description1", Arrays.asList("Step1")));
-        when(courseRepository.save(new Course(null, "Course2", "Description2", Arrays.asList("Step2")))).thenReturn(new Course(2L, "Course2", "Description2", Arrays.asList("Step2")));
+        when(courseRepository.save(new Course(null, "Course1", "Description1", List.of("Step1")))).thenReturn(new Course(1L, "Course1", "Description1", Arrays.asList("Step1")));
+        when(courseRepository.save(new Course(null, "Course2", "Description2", List.of("Step2")))).thenReturn(new Course(2L, "Course2", "Description2", Arrays.asList("Step2")));
 
-        assertEquals(true, courseService.createCourse("Course1"));
-        assertEquals(true, courseService.createCourse("Course2"));
+        assertTrue(courseService.createCourse("Course1"));
+        assertTrue(courseService.createCourse("Course2"));
     }
 
     @Test
